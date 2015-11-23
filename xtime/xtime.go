@@ -16,9 +16,13 @@
 package xtime
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 	"time"
+)
+
+var (
+	ErrUnknownTimeFormat = errors.New("Unknown time format")
 )
 
 // TimeFormats is a list of commonly seen time formats from log messages
@@ -82,7 +86,12 @@ func Parse(t string) (time.Time, error) {
 		}
 	}
 
-	return time.Time{}, fmt.Errorf("Unknown time format")
+	return time.Time{}, ErrUnknownTimeFormat
+}
+
+func IsTime(t string) bool {
+	_, err := Parse(t)
+	return err == nil
 }
 
 type timeNodeType int
