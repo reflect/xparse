@@ -9,7 +9,7 @@ var (
 	format = "2006-01-02 15:04:05"
 )
 
-func TimeZoneOffset(offset string) (hours int, minutes int, err error) {
+func TimezoneOffset(offset string) (hours int, minutes int, err error) {
 	loc, err := time.LoadLocation(offset)
 
 	if err != nil {
