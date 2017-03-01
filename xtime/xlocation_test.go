@@ -19,7 +19,7 @@ func TestTimeZoneOffset(t *testing.T) {
 	}
 
 	for tz, fixture := range fixtures {
-		hours, mins, err := TimeZoneOffset(tz)
+		hours, mins, err := TimezoneOffset(tz)
 
 		assert.NoError(t, err)
 		assert.Equal(t, fixture.Hours, hours)
