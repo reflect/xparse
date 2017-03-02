@@ -25,12 +25,12 @@ import (
 
 var (
 	re1 = regexp.MustCompile("_")
-	re2 = regexp.MustCompile("Z")
+	re2 = regexp.MustCompile("Z(.)") // Go doesn't support lookahead assertions.
 )
 
 func TestTimeFormats(t *testing.T) {
 	for _, f := range TimeFormats {
-		tx := re2.ReplaceAllString(re1.ReplaceAllString(f, " "), "+")
+		tx := re2.ReplaceAllString(re1.ReplaceAllString(f, " "), "+$1")
 		expected, err := time.Parse(f, tx)
 		require.NoError(t, err)
 		actual, err := Parse(tx)
@@ -41,8 +41,23 @@ func TestTimeFormats(t *testing.T) {
 
 func TestTimeFormatsIsTime(t *testing.T) {
 	for _, f := range TimeFormats {
-		tx := re2.ReplaceAllString(re1.ReplaceAllString(f, " "), "+")
+		tx := re2.ReplaceAllString(re1.ReplaceAllString(f, " "), "+$1")
 		require.True(t, IsTime(tx))
+	}
+}
+
+func TestKnownTimes(t *testing.T) {
+	times := []struct {
+		In, Out string
+	}{
+		{"2017-03-01T23:16:37.986Z", "2017-03-01T23:16:37Z"},
+		{"2017-03-01T23:16:37.986-07:00", "2017-03-01T23:16:37-07:00"},
+	}
+
+	for _, tx := range times {
+		parsed, err := Parse(tx.In)
+		require.NoError(t, err)
+		require.Equal(t, tx.Out, parsed.Format(time.RFC3339))
 	}
 }
 

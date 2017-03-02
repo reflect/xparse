@@ -112,7 +112,6 @@ type timeNode struct {
 
 const (
 	timeNodeRoot timeNodeType = iota
-	timeNodeLeaf
 	timeNodeDigit
 	timeNodeLetter
 	timeNodeLiteral
@@ -154,7 +153,7 @@ func buildTimeTree() *timeNode {
 				}
 			}
 
-			if hasChild == false {
+			if !hasChild {
 				child = &timeNode{ntype: typ, value: r}
 				parent.children = append(parent.children, child)
 			}
@@ -188,18 +187,4 @@ func tnType(r rune) timeNodeType {
 	}
 
 	return timeNodeLiteral
-}
-
-func timeStep(r rune, cur *timeNode) *timeNode {
-	typ := tnType(r)
-
-	for _, n := range cur.children {
-		if (n.ntype == timeNodeDigitOrSpace && (typ == timeNodeDigit || typ == timeNodeSpace)) ||
-			(n.ntype == typ && (typ != timeNodeLiteral || (typ == timeNodeLiteral && rune(n.value) == r))) {
-
-			return n
-		}
-	}
-
-	return nil
 }
