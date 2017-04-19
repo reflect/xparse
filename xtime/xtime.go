@@ -74,9 +74,14 @@ var TimeFormats []string = []string{
 	"2006/1/2",
 }
 
-func Parse(t string) (time.Time, error) {
+type TimeTree struct {
+	formats []string
+	root    *timeNode
+}
+
+func (tt *TimeTree) Parse(t string) (time.Time, error) {
 	tx := strings.ToLower(t)
-	cur := timeTreeRoot
+	cur := tt.root
 
 	for i, r := range tx {
 		typ := tnType(r)
@@ -91,16 +96,35 @@ func Parse(t string) (time.Time, error) {
 		}
 
 		if cur.final && i == len(tx)-1 {
-			return time.Parse(TimeFormats[cur.subtype], t)
+			return time.Parse(tt.formats[cur.subtype], t)
 		}
 	}
 
 	return time.Time{}, ErrUnknownTimeFormat
 }
 
-func IsTime(t string) bool {
-	_, err := Parse(t)
+func (tt *TimeTree) IsTime(t string) bool {
+	_, err := tt.Parse(t)
 	return err == nil
+}
+
+func Root() *TimeTree {
+	return timeTreeRoot
+}
+
+func Compile(formats []string) *TimeTree {
+	return &TimeTree{
+		formats: formats,
+		root:    buildTimeTree(formats),
+	}
+}
+
+func Parse(t string) (time.Time, error) {
+	return timeTreeRoot.Parse(t)
+}
+
+func IsTime(t string) bool {
+	return timeTreeRoot.IsTime(t)
 }
 
 type timeNodeType int
@@ -124,17 +148,17 @@ const (
 )
 
 var (
-	timeTreeRoot *timeNode
+	timeTreeRoot *TimeTree
 )
 
 func init() {
-	timeTreeRoot = buildTimeTree()
+	timeTreeRoot = Compile(TimeFormats)
 }
 
-func buildTimeTree() *timeNode {
+func buildTimeTree(formats []string) *timeNode {
 	root := &timeNode{ntype: timeNodeRoot}
 
-	for i, f := range TimeFormats {
+	for i, f := range formats {
 		tf := strings.ToLower(f)
 		parent := root
 
