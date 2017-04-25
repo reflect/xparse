@@ -5,6 +5,8 @@ import (
 )
 
 const (
+	MaximumPOSIXBranches = 512
+
 	posixStateStr = iota
 	posixStateSpecifier
 )
@@ -90,12 +92,12 @@ func FromPOSIX(format string) ([]string, error) {
 			case 'b', 'B', 'h':
 				bufs.WriteString("Jan", "January")
 			case 'C':
-				// The century of the date. Very strange.
+				// The century of the date (e.g. 19 or 20). Very strange.
 				return nil, ErrNotImplemented
 			case 'd', 'e':
 				bufs.WriteString("2", "02")
 			case 'D':
-				bufs.WriteString("1/2/06", "1/02/06", "01/2/06", "01/02/06")
+				bufs.WriteString("1/2/06")
 			case 'H':
 				bufs.WriteString("15")
 			case 'I':
@@ -112,13 +114,13 @@ func FromPOSIX(format string) ([]string, error) {
 			case 'p':
 				bufs.WriteString("PM")
 			case 'r':
-				bufs.WriteString("3:4:5PM", "3:4:05PM", "3:04:5PM", "03:4:5PM", "3:04:05PM", "03:04:5PM", "03:04:05PM")
+				bufs.WriteString("3:4:5PM")
 			case 'R':
-				bufs.WriteString("15:4", "15:04")
+				bufs.WriteString("15:4")
 			case 'S':
 				bufs.WriteString("5", "05")
 			case 'T':
-				bufs.WriteString("15:4:5", "15:4:05", "15:04:5", "15:04:05")
+				bufs.WriteString("15:4:5")
 			case 'U':
 				// Week number of year (first day of the week is Sunday).
 				return nil, ErrNotImplemented
@@ -138,7 +140,7 @@ func FromPOSIX(format string) ([]string, error) {
 			case 'z':
 				// Time zone. Not supported by POSIX specification, but
 				// supported by Python. Seems fairly common.
-				bufs.WriteString("MST", "-0700")
+				bufs.WriteString("-0700", "-07:00")
 			case '%':
 				bufs.WriteRune('%')
 			default:
@@ -146,6 +148,10 @@ func FromPOSIX(format string) ([]string, error) {
 			}
 
 			state = posixStateStr
+		}
+
+		if len(*bufs) > MaximumPOSIXBranches {
+			return nil, ErrFormatStringTooComplex
 		}
 	}
 
