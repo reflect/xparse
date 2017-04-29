@@ -278,7 +278,6 @@ func (ztn *zoneTimeNode) Visit(tnv *timeNodeVisitor, t string) {
 	sz := 0
 
 	// Could be "Z" or +/-HH:MM.
-	// +/-HH:MM.
 	r, l := utf8.DecodeRuneInString(t)
 
 	sz++

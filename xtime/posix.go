@@ -140,7 +140,7 @@ func FromPOSIX(format string) ([]string, error) {
 			case 'z':
 				// Time zone. Not supported by POSIX specification, but
 				// supported by Python. Seems fairly common.
-				bufs.WriteString("-0700", "-07:00")
+				bufs.WriteString("Z0700", "Z07:00")
 			case '%':
 				bufs.WriteRune('%')
 			default:
