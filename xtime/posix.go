@@ -96,6 +96,8 @@ func FromPOSIX(format string) ([]string, error) {
 				return nil, ErrNotImplemented
 			case 'd', 'e':
 				bufs.WriteString("2", "02")
+			case 'f':
+				bufs.WriteString("999999999")
 			case 'D':
 				bufs.WriteString("1/2/06")
 			case 'H':
