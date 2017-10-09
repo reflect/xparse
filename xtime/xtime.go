@@ -84,6 +84,24 @@ type TimeTree struct {
 	root    timeNode
 }
 
+func (tt *TimeTree) ParseInLocation(t string, loc *time.Location) (time.Time, error) {
+	tnv := newTimeNodeVisitor()
+	tnv.Visit(tt.root, t)
+
+	candidates := tnv.Matches()
+
+	for _, candidate := range candidates {
+		t, err := time.ParseInLocation(candidate, t, loc)
+		if _, ok := err.(*time.ParseError); ok {
+			continue
+		}
+
+		return t, err
+	}
+
+	return time.Time{}, ErrInvalidTime
+}
+
 func (tt *TimeTree) Parse(t string) (time.Time, error) {
 	tnv := newTimeNodeVisitor()
 	tnv.Visit(tt.root, t)
@@ -116,6 +134,10 @@ func Compile(formats []string) *TimeTree {
 		formats: formats,
 		root:    buildTimeTree(formats),
 	}
+}
+
+func ParseInLocation(t string, loc *time.Location) (time.Time, error) {
+	return timeTreeRoot.ParseInLocation(t, loc)
 }
 
 func Parse(t string) (time.Time, error) {
