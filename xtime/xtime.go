@@ -32,8 +32,10 @@ var TimeFormats = []string{
 	"Mon Jan 02 15:04:05 -07:00 2006",
 	"02 Jan 06 15:04 -0700",
 	"02 Jan 06 15:04 -07:00",
+	"Monday, 02-Jan-06 15:04:05",
 	"Monday, 02-Jan-06 15:04:05 -0700",
 	"Monday, 02-Jan-06 15:04:05 -07:00",
+	"Mon, 02 Jan 2006 15:04:05",
 	"Mon, 02 Jan 2006 15:04:05 -0700",
 	"Mon, 02 Jan 2006 15:04:05 -07:00",
 	"2006-01-02T00:00:00",
@@ -84,6 +86,28 @@ type TimeTree struct {
 	root    timeNode
 }
 
+func (tt *TimeTree) ParseInLocation(t string, loc *time.Location) (time.Time, error) {
+	if loc == nil {
+		return tt.Parse(t)
+	}
+
+	tnv := newTimeNodeVisitor()
+	tnv.Visit(tt.root, t)
+
+	candidates := tnv.Matches()
+
+	for _, candidate := range candidates {
+		t, err := time.ParseInLocation(candidate, t, loc)
+		if _, ok := err.(*time.ParseError); ok {
+			continue
+		}
+
+		return t, err
+	}
+
+	return time.Time{}, ErrInvalidTime
+}
+
 func (tt *TimeTree) Parse(t string) (time.Time, error) {
 	tnv := newTimeNodeVisitor()
 	tnv.Visit(tt.root, t)
@@ -116,6 +140,10 @@ func Compile(formats []string) *TimeTree {
 		formats: formats,
 		root:    buildTimeTree(formats),
 	}
+}
+
+func ParseInLocation(t string, loc *time.Location) (time.Time, error) {
+	return timeTreeRoot.ParseInLocation(t, loc)
 }
 
 func Parse(t string) (time.Time, error) {

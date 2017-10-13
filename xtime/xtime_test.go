@@ -62,6 +62,26 @@ func TestKnownTimes(t *testing.T) {
 	}
 }
 
+func TestParsingTimeInLocation(t *testing.T) {
+	pt, _ := time.LoadLocation("America/Los_Angeles")
+
+	times := []struct {
+		Location *time.Location
+		In, Out  string
+	}{
+		{pt, "2017-03-01 23:16:37", "2017-03-01T23:16:37-08:00"},
+		{pt, "2017-03-01T23:16:37.986Z", "2017-03-01T23:16:37Z"},
+		{time.UTC, "2017-03-01 23:16:37", "2017-03-01T23:16:37Z"},
+		{nil, "Tuesday, 03-Jan-06 15:04:05", "2006-01-03T15:04:05Z"},
+	}
+
+	for _, tx := range times {
+		parsed, err := ParseInLocation(tx.In, tx.Location)
+		require.NoError(t, err, "for input %s", tx.In)
+		require.Equal(t, tx.Out, parsed.Format(time.RFC3339), "for input %s", tx.In)
+	}
+}
+
 func ExampleParse() {
 	t1, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
 	t2, err := Parse("2006-01-02T15:04:05+07:00")
