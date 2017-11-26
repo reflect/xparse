@@ -19,6 +19,7 @@ package xtime
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -40,11 +41,8 @@ var TimeFormats = []string{
 	"Mon, 02 Jan 2006 15:04:05 -07:00",
 	"2006-01-02T15:04:05",
 	"2006-01-02T15:04:05Z07:00",
-	"2006-01-02T15:04:05Z",
 	"2006-01-02T15:04:05.999999999Z07:00",
-	"2006-01-02T15:04:05.999999999Z",
 	"2006-01-02T15:04:05.999Z07:00",
-	"2006-01-02T15:04:05.999Z",
 	"Jan _2 15:04:05",
 	"Jan _2 15:04:05.000",
 	"Jan _2 15:04:05.000000",
@@ -175,6 +173,9 @@ func (tnv *timeNodeVisitor) Matches() []string {
 		i++
 	}
 
+	sort.Slice(matches, func(i, j int) bool {
+		return len(matches[i]) > len(matches[j])
+	})
 	return matches
 }
 
